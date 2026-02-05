@@ -1,13 +1,19 @@
 "use client";
 
-import { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useEffect,
+  forwardRef,
+} from "react";
 import HTMLFlipBook from "react-pageflip";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Set up PDF.js worker - use cdnjs for better reliability
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
 interface PDFFlipbookProps {
   pdfUrl: string;
@@ -22,50 +28,57 @@ interface FlipBookRef {
   };
 }
 
-const PageCover = ({
-  children,
-  title,
-}: {
-  children?: React.ReactNode;
-  title?: string;
-}) => {
+// PageCover component with forwardRef for react-pageflip
+const PageCover = forwardRef<
+  HTMLDivElement,
+  { children?: React.ReactNode; title?: string }
+>(({ children, title }, ref) => {
   return (
-    <div className="page page-cover bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+    <div
+      ref={ref}
+      className="page page-cover bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center w-full h-full"
+    >
       <div className="text-center text-white p-8">
         {title && <h2 className="text-2xl font-bold mb-4">{title}</h2>}
         {children}
       </div>
     </div>
   );
-};
+});
+PageCover.displayName = "PageCover";
 
-const PDFPage = ({
-  pageNumber,
-  width,
-  height,
-}: {
-  pageNumber: number;
-  width: number;
-  height: number;
-}) => {
+// PDFPage component with forwardRef for react-pageflip
+const PDFPage = forwardRef<
+  HTMLDivElement,
+  { pageNumber: number; width: number; height: number }
+>(({ pageNumber, width, height }, ref) => {
   return (
-    <div className="page bg-white flex items-center justify-center overflow-hidden">
+    <div
+      ref={ref}
+      className="page bg-white flex items-center justify-center overflow-hidden w-full h-full"
+    >
       <Page
         pageNumber={pageNumber}
         width={width - 20}
-        height={height - 20}
         renderTextLayer={false}
         renderAnnotationLayer={false}
         className="pdf-page"
+        loading={
+          <div className="flex items-center justify-center w-full h-full">
+            <div className="animate-pulse bg-slate-200 w-full h-full"></div>
+          </div>
+        }
       />
     </div>
   );
-};
+});
+PDFPage.displayName = "PDFPage";
 
 export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [dimensions, setDimensions] = useState({ width: 400, height: 550 });
   const bookRef = useRef<FlipBookRef>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -101,11 +114,19 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
 
   const onDocumentLoadSuccess = useCallback(
     ({ numPages }: { numPages: number }) => {
+      console.log("PDF loaded successfully, pages:", numPages);
       setNumPages(numPages);
       setIsLoading(false);
+      setError(null);
     },
     []
   );
+
+  const onDocumentLoadError = useCallback((err: Error) => {
+    console.error("PDF load error:", err);
+    setError(err.message);
+    setIsLoading(false);
+  }, []);
 
   const onFlip = useCallback((e: { data: number }) => {
     setCurrentPage(e.data);
@@ -138,14 +159,17 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
       <Document
         file={pdfUrl}
         onLoadSuccess={onDocumentLoadSuccess}
+        onLoadError={onDocumentLoadError}
         loading={
-          <div className="flex items-center justify-center h-96">
+          <div className="flex flex-col items-center justify-center h-96 gap-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-700"></div>
+            <p className="text-slate-500">Loading PDF...</p>
           </div>
         }
         error={
-          <div className="flex items-center justify-center h-96 text-red-500">
-            Failed to load PDF. Please try again.
+          <div className="flex flex-col items-center justify-center h-96 text-red-500 gap-2">
+            <p>Failed to load PDF</p>
+            {error && <p className="text-sm text-red-400">{error}</p>}
           </div>
         }
       >
@@ -178,31 +202,26 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
               disableFlipByClick={false}
             >
               {/* Cover page */}
-              <div className="page">
-                <PageCover title={title}>
-                  <p className="text-slate-300 text-sm mt-4">
-                    Click or swipe to turn pages
-                  </p>
-                </PageCover>
-              </div>
+              <PageCover title={title}>
+                <p className="text-slate-300 text-sm mt-4">
+                  Click or swipe to turn pages
+                </p>
+              </PageCover>
 
               {/* PDF pages */}
               {Array.from(new Array(numPages), (_, index) => (
-                <div key={`page_${index + 1}`} className="page">
-                  <PDFPage
-                    pageNumber={index + 1}
-                    width={dimensions.width}
-                    height={dimensions.height}
-                  />
-                </div>
+                <PDFPage
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1}
+                  width={dimensions.width}
+                  height={dimensions.height}
+                />
               ))}
 
               {/* Back cover */}
-              <div className="page">
-                <PageCover title="End">
-                  <p className="text-slate-300 text-sm">Thank you for reading</p>
-                </PageCover>
-              </div>
+              <PageCover title="End">
+                <p className="text-slate-300 text-sm">Thank you for reading</p>
+              </PageCover>
             </HTMLFlipBook>
 
             {/* Navigation controls */}
