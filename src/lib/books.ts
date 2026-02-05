@@ -20,6 +20,16 @@ export const books: Book[] = [
     year: 1985,
     tags: ["media criticism", "society", "technology", "culture"],
   },
+  {
+    id: "interference",
+    title: "Interference: A Grand Scientific Musical Theory",
+    author: "Richard Merrick",
+    description:
+      "A groundbreaking exploration of Harmonic Interference Theory - a set of principles explaining music perception using the physics of harmonic standing waves. The book reveals how harmonics combine to form coherent geometrical patterns that our auditory system recognizes, connecting music theory to cymatics, Fibonacci sequences, and the fundamental patterns found throughout nature.",
+    pdfPath: "/books/interference.pdf",
+    year: 2009,
+    tags: ["music theory", "harmonics", "cymatics", "science", "perception"],
+  },
 ];
 
 export function getBook(id: string): Book | undefined {
