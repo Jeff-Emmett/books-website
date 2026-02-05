@@ -1,0 +1,14 @@
+services:
+  books-website:
+    build: .
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.books.rule=Host(`books.jeffemmett.com`)"
+      - "traefik.http.services.books.loadbalancer.server.port=3000"
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
