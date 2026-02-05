@@ -31,15 +31,26 @@ interface FlipBookRef {
 // PageCover component with forwardRef for react-pageflip
 const PageCover = forwardRef<
   HTMLDivElement,
-  { children?: React.ReactNode; title?: string }
->(({ children, title }, ref) => {
+  { children?: React.ReactNode; title?: string; width?: number; height?: number }
+>(({ children, title, width, height }, ref) => {
   return (
     <div
       ref={ref}
-      className="page page-cover bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center w-full h-full"
+      style={{
+        width: width ? `${width}px` : "100%",
+        height: height ? `${height}px` : "100%",
+        background: "linear-gradient(135deg, #334155 0%, #1e293b 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
-      <div className="text-center text-white p-8">
-        {title && <h2 className="text-2xl font-bold mb-4">{title}</h2>}
+      <div style={{ textAlign: "center", color: "white", padding: "2rem" }}>
+        {title && (
+          <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem" }}>
+            {title}
+          </h2>
+        )}
         {children}
       </div>
     </div>
@@ -55,17 +66,48 @@ const PDFPage = forwardRef<
   return (
     <div
       ref={ref}
-      className="page bg-white flex items-center justify-center overflow-hidden w-full h-full"
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        backgroundColor: "white",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        overflow: "hidden",
+      }}
     >
       <Page
         pageNumber={pageNumber}
         width={width - 20}
         renderTextLayer={false}
         renderAnnotationLayer={false}
-        className="pdf-page"
         loading={
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="animate-pulse bg-slate-200 w-full h-full"></div>
+          <div
+            style={{
+              width: width - 20,
+              height: height - 20,
+              backgroundColor: "#e2e8f0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            Loading page {pageNumber}...
+          </div>
+        }
+        error={
+          <div
+            style={{
+              width: width - 20,
+              height: height - 20,
+              backgroundColor: "#fee2e2",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#dc2626",
+            }}
+          >
+            Error loading page {pageNumber}
           </div>
         }
       />
@@ -202,8 +244,12 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
               disableFlipByClick={false}
             >
               {/* Cover page */}
-              <PageCover title={title}>
-                <p className="text-slate-300 text-sm mt-4">
+              <PageCover
+                title={title}
+                width={dimensions.width}
+                height={dimensions.height}
+              >
+                <p style={{ color: "#cbd5e1", fontSize: "0.875rem", marginTop: "1rem" }}>
                   Click or swipe to turn pages
                 </p>
               </PageCover>
@@ -219,8 +265,14 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
               ))}
 
               {/* Back cover */}
-              <PageCover title="End">
-                <p className="text-slate-300 text-sm">Thank you for reading</p>
+              <PageCover
+                title="End"
+                width={dimensions.width}
+                height={dimensions.height}
+              >
+                <p style={{ color: "#cbd5e1", fontSize: "0.875rem" }}>
+                  Thank you for reading
+                </p>
               </PageCover>
             </HTMLFlipBook>
 
