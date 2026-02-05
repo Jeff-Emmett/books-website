@@ -81,7 +81,7 @@ export default async function BookPage({ params }: PageProps) {
       {/* Book viewer */}
       <main className="py-8 px-4">
         <div className="max-w-7xl mx-auto">
-          <BookViewer pdfUrl={book.pdfPath} title={book.title} />
+          <BookViewer pdfUrl={book.pdfPath} title={book.title} author={book.author} />
         </div>
       </main>
 

@@ -16,6 +16,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.vers
 interface PDFFlipbookProps {
   pdfUrl: string;
   title: string;
+  author?: string;
 }
 
 interface FlipBookRef {
@@ -29,8 +30,8 @@ interface FlipBookRef {
 // PageCover component with forwardRef for react-pageflip
 const PageCover = forwardRef<
   HTMLDivElement,
-  { children?: React.ReactNode; title?: string; width: number; height: number }
->(({ children, title, width, height }, ref) => {
+  { children?: React.ReactNode; title?: string; author?: string; width: number; height: number }
+>(({ children, title, author, width, height }, ref) => {
   return (
     <div
       ref={ref}
@@ -41,13 +42,28 @@ const PageCover = forwardRef<
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        boxSizing: "border-box",
       }}
     >
-      <div style={{ textAlign: "center", color: "white", padding: "2rem" }}>
+      <div style={{ textAlign: "center", color: "white", padding: "2rem", maxWidth: "90%" }}>
         {title && (
-          <h2 style={{ fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem" }}>
+          <h2 style={{
+            fontSize: "1.75rem",
+            fontWeight: "bold",
+            marginBottom: "1rem",
+            lineHeight: "1.3",
+          }}>
             {title}
           </h2>
+        )}
+        {author && (
+          <p style={{
+            fontSize: "1.1rem",
+            color: "#94a3b8",
+            marginBottom: "1rem",
+          }}>
+            by {author}
+          </p>
         )}
         {children}
       </div>
@@ -104,7 +120,7 @@ const ImagePage = forwardRef<
 });
 ImagePage.displayName = "ImagePage";
 
-export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
+export default function PDFFlipbook({ pdfUrl, title, author }: PDFFlipbookProps) {
   const [pageImages, setPageImages] = useState<string[]>([]);
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState(0);
@@ -295,10 +311,11 @@ export default function PDFFlipbook({ pdfUrl, title }: PDFFlipbookProps) {
             {/* Cover page */}
             <PageCover
               title={title}
+              author={author}
               width={dimensions.width}
               height={dimensions.height}
             >
-              <p style={{ color: "#cbd5e1", fontSize: "0.875rem", marginTop: "1rem" }}>
+              <p style={{ color: "#cbd5e1", fontSize: "0.875rem", marginTop: "1.5rem" }}>
                 Click or swipe to turn pages
               </p>
             </PageCover>

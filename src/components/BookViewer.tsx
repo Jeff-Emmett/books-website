@@ -15,8 +15,9 @@ const PDFFlipbook = dynamic(() => import("@/components/PDFFlipbook"), {
 interface BookViewerProps {
   pdfUrl: string;
   title: string;
+  author?: string;
 }
 
-export default function BookViewer({ pdfUrl, title }: BookViewerProps) {
-  return <PDFFlipbook pdfUrl={pdfUrl} title={title} />;
+export default function BookViewer({ pdfUrl, title, author }: BookViewerProps) {
+  return <PDFFlipbook pdfUrl={pdfUrl} title={title} author={author} />;
 }
