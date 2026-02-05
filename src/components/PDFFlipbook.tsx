@@ -10,8 +10,8 @@ import React, {
 import HTMLFlipBook from "react-pageflip";
 import { pdfjs } from "react-pdf";
 
-// Set up PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+// Set up PDF.js worker - use unpkg which has the latest versions
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFFlipbookProps {
   pdfUrl: string;
